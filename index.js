@@ -21,7 +21,9 @@ app.use(express.urlencoded({extended:true}))
 const userRoutes = require('./routes/users')
 app.use('/users',userRoutes)
 
-
+app.get('/',(req,res) => {
+    res.render('index')
+})
 
 app.listen(3013, () => {
     console.log('PORT 3013')
