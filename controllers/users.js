@@ -1,6 +1,6 @@
 const bcrypt = require('bcrypt')
-const User = require('../models/user')
-
+const User = require('../models/user');
+const { all } = require('../routes/users');
 
 
 const register = (req,res) => {
@@ -16,6 +16,9 @@ const register = (req,res) => {
 
 
     const names = connection.query('SELECT username from users', function(err, results, fields) {
+        
+        
+        
         if(err) {
             console.log('nime tabelist votmisega laks pekki');
             } else {
@@ -29,33 +32,83 @@ const register = (req,res) => {
                 .then(user => {
                     if (user) {
 
-
-                        // KUVAB KASUTAJA MIS OLEMAS ON 
                 console.log('-- KASUTAJA EKSISTEERIB');
                     
                     } else {
                             
-                        console.log('else juhtus')
+                        console.log('++ SAI NIME PASAST LABI ++')
                     
-                            bcrypt.hash(req.body.password, 10, (error, cryptPassword) => {
-                            
-                            
-                                User.create({
-                                    username: req.body.username,
-                                    email:req.body.email,
-                                    password: cryptPassword
-                                })
-                            
-                            console.log(req.session)
-                            
-                            
-                            res.json({
-                                message: 'New user is registered',
-                                user: register,
-                                user_session: req.session.user
-                            })
                         
-                        })
+                        const passwords = User.findOne({where: {
+                            password: req.body.password
+                        }})
+                            .then(password => {
+                                
+                                
+                                
+                                // const Found = req_ex_elems.includes('!','"','#','$','%','&')
+                                // const sisaldus = req.body.password.str(Found)
+
+                                const keerukuseCheck = (password) => {
+                                    const req_ex_elems = ['!','"','#','$','%','&']
+
+                                    let elemCount = 0
+                                    for(let i = 0; i < password.length; i++){
+                                        for(let j = 0; j < req_ex_elems.length; j++){
+                                            if(password[i] === req_ex_elems[j]){
+                                                elemCount++;
+                                            }
+                                        }
+                                    }
+                                    if(elemCount > 0){
+                                        return true
+                                    } return false
+
+                                }
+                                
+                                
+                                if (req.body.password.length  > 10) {
+                                    console.log('--LIIGA PIKK PASSWORD--')
+                                
+                                
+                                
+                                
+                                
+                                
+                                } else if (keerukuseCheck(req.body.password) == false) {
+                                    
+                                    console.log('++ WEAK ASS PASS ++')
+
+                                
+                                } else {
+                                    
+                                                    
+                                    console.log('++ SAI PASSWORDI SITAST LABI ++')
+                                    console.log('Pass: ',req.body.password.length)
+                                
+                                        bcrypt.hash(req.body.password, 10, (error, cryptPassword) => {
+                                        
+                                        
+                                            User.create({
+                                                username: req.body.username,
+                                                email:req.body.email,
+                                                password: cryptPassword
+                                            })
+                                        
+                                        console.log(req.session)
+                                        
+                                        
+                                        res.json({
+                                            message: 'New user is registered',
+                                            user: register,
+                                            user_session: req.session.user
+                                        })
+                                    
+                                    })
+
+                                }
+                            })
+                            
 
                     }
                          
@@ -67,25 +120,6 @@ const register = (req,res) => {
         
         }
     });
-
-
-
-    const passwords = User.findOne({where: {
-        password: req.body.password
-    }})
-        .then(password => {
-            if (password.length  > 10) {
-                console.log('--LIIGA PIKK PASSWORD--')
-            } else {}
-        })
-
-
-
-
-
-
-
-
 
 }
 
